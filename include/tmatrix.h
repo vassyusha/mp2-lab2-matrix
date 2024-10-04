@@ -16,6 +16,7 @@ const int MAX_MATRIX_SIZE = 10000;
 
 // Динамический вектор - 
 // шаблонный вектор на динамической памяти
+
 template<typename T>
 class TDynamicVector
 {
