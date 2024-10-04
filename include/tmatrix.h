@@ -26,27 +26,42 @@ protected:
 public:
   TDynamicVector(size_t size = 1) : sz(size)
   {
-    if (sz == 0)
+    if (sz == 0 || sz > MAX_VECTOR_SIZE)
       throw out_of_range("Vector size should be greater than zero");
     pMem = new T[sz]();// {}; // У типа T д.б. констуктор по умолчанию
   }
+
   TDynamicVector(T* arr, size_t s) : sz(s)
   {
     assert(arr != nullptr && "TDynamicVector ctor requires non-nullptr arg");
     pMem = new T[sz];
     std::copy(arr, arr + sz, pMem);
   }
-  TDynamicVector(const TDynamicVector& v)
+
+  TDynamicVector(const TDynamicVector& v)//copy constructor
   {
+      this->sz = v.sz;
+      this->pMem = new T[sz];
+      for (int i = 0; i < this->sz; i++) this->pMem[i] = v.pMem[i];
   }
-  TDynamicVector(TDynamicVector&& v) noexcept
+
+  TDynamicVector(TDynamicVector&& v) noexcept//move constructor
   {
+      this->sz = v.sz;
+      this->pMem = v.pMem;
+      v.pMem = nullptr;
+      v.sz = 0;
   }
-  ~TDynamicVector()
+
+  ~TDynamicVector()//destructor
   {
+      delete[] pMem;
+      sz = 0;
   }
+
   TDynamicVector& operator=(const TDynamicVector& v)
   {
+      return *this;
   }
   TDynamicVector& operator=(TDynamicVector&& v) noexcept
   {
