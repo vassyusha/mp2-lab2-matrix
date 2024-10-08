@@ -84,22 +84,22 @@ public:
   // индексация
   T& operator[](size_t ind)
   { 
-      return this->sz;
+      return this->pMem[ind];
   }
   const T& operator[](size_t ind) const
   {
-      return this->sz;
+      return this->pMem[ind];
   }
   // индексация с контролем
   T& at(size_t ind)
   {
       if (ind < 0 || ind >= sz) throw "incorrect index";
-      return this->ind;
+      return this->pMem[ind];
   }
   const T& at(size_t ind) const
   {
       if (ind < 0 || ind >= sz) throw "incorrect index";
-      return this->ind;
+      return this->pMem[ind];
   }
 
   // сравнение
@@ -137,18 +137,24 @@ public:
   // векторные операции
   TDynamicVector operator+(const TDynamicVector& v)
   {
+      if (this->sz != v.sz) throw "different sizes";
+
       TDynamicVector curr(this->sz);
       for (int i = 0; i < curr.sz; i++) curr.pMem[i] = this->pMem[i] + v.pMem[i];
       return curr;
   }
   TDynamicVector operator-(const TDynamicVector& v)
   {
+      if (this->sz != v.sz) throw "different sizes";
+
       TDynamicVector curr(this->sz);
       for (int i = 0; i < curr.sz; i++) curr.pMem[i] = this->pMem[i] - v.pMem[i];
       return curr;
   }
-  T operator*(const TDynamicVector& v) noexcept(noexcept(T()))
+  T operator*(const TDynamicVector& v)
   {
+      if (this->sz != v.sz) throw "different sizes";
+
       T res = 0;
       for (int i = 0; i < this->sz; i++) res += this->pMem[i] * v.pMem[i];
       return res;
