@@ -26,8 +26,8 @@ protected:
 public:
   TDynamicVector(size_t size = 1) : sz(size)
   {
-    if (sz == 0 || sz > MAX_VECTOR_SIZE)
-      throw out_of_range("Vector size should be greater than zero");
+    if (sz <= 0 || sz > MAX_VECTOR_SIZE)
+      throw out_of_range("Vector size should be greater than zero and less than MAX_SIZE");
     pMem = new T[sz]();// {}; // У типа T д.б. констуктор по умолчанию
   }
 
@@ -192,44 +192,115 @@ class TDynamicMatrix : private TDynamicVector<TDynamicVector<T>>
 public:
   TDynamicMatrix(size_t s = 1) : TDynamicVector<TDynamicVector<T>>(s)
   {
+      if (s <= 0 || s > MAX_MATRIX_SIZE)
+          throw out_of_range("Matrix size should be greater than zero and less than MAX_SIZE");
     for (size_t i = 0; i < sz; i++)
       pMem[i] = TDynamicVector<T>(sz);
   }
 
+  TDynamicMatrix(TDynamicVector<TDynamicVector<T>> v) : TDynamicVector<TDynamicVector<T>>(v)
+  {
+      if(v.size() <= 0 || v.size() > MAX_MATRIX_SIZE)
+          throw out_of_range("Matrix size should be greater than zero and less than MAX_SIZE");
+  }
+
   using TDynamicVector<TDynamicVector<T>>::operator[];
+  using TDynamicVector<TDynamicVector<T>>::size;
+
+  
+  T& at(size_t ind1, size_t ind2)
+  {
+      if (ind1 < 0 || ind1 >= sz || ind2 < 0 || ind2 >= sz) throw "incorrect index";
+      return this->pMem[ind1][ind2];
+  }
+  const T& at(size_t ind1, size_t ind2) const
+  {
+      if (ind1 < 0 || ind1 >= sz || ind2 < 0 || ind2 >= sz) throw "incorrect index";
+      return this->pMem[ind1][ind2];
+  }
+
+  //приведение типов
+  operator TDynamicVector<TDynamicVector<T>>() {
+      TDynamicVector<TDynamicVector<T>> v(this->sz);
+      for (int i = 0; i < sz; i++) v[i] = this->pMem[i];
+      return v;
+  }
 
   // сравнение
+
   bool operator==(const TDynamicMatrix& m) const noexcept
   {
+      if (this->sz != m.sz) return false;
+      for (int i = 0; i < this->sz; i++) if (this->pMem[i] !=m.pMem[i]) return false;
+      return true;
+  }
+
+  bool operator!=(const TDynamicMatrix& m) const noexcept
+  {
+      return !((*this) == m);
   }
 
   // матрично-скалярные операции
-  TDynamicVector<T> operator*(const T& val)
+  TDynamicMatrix<T> operator*(const T& val)
   {
+      TDynamicMatrix<T> m(sz);
+
+      m = (TDynamicVector<TDynamicVector<T>>)(*this) * val;
+      return m;
   }
 
   // матрично-векторные операции
   TDynamicVector<T> operator*(const TDynamicVector<T>& v)
   {
+      if (v.size() != this->sz) throw "different size";
+      TDynamicVector<T> res(v.size());
+      for (int i = 0; i < v.size(); i++) res[i] = this->pMem[i] * v;
+      return res;
   }
 
   // матрично-матричные операции
   TDynamicMatrix operator+(const TDynamicMatrix& m)
   {
+      if (this->sz != m.sz) throw "different sizes";
+      TDynamicMatrix<T> res;
+      res = (TDynamicVector<TDynamicVector<T>>)(*this) + (TDynamicVector<TDynamicVector<T>>)m;
+      return res;
   }
+
   TDynamicMatrix operator-(const TDynamicMatrix& m)
   {
+      if (this->sz != m.sz) throw "different sizes";
+      TDynamicMatrix<T> res;
+      res = (TDynamicVector<TDynamicVector<T>>)(*this) - (TDynamicVector<TDynamicVector<T>>)m;
+      return res;
   }
   TDynamicMatrix operator*(const TDynamicMatrix& m)
   {
+      if (this->sz != m.sz) throw "different sizes";
+      TDynamicMatrix<T> res(this->sz);
+      for (int i = 0; i < this->sz; i++) for (int j = 0; j < this->sz; j++) res[i][j] = 0;
+
+      for (int i = 0; i < this->sz; i++) {
+          for (int k = 0; k < this->sz; k++) {
+              for (int j = 0; j < this->sz; j++) res[i][j] += (*this)[i][k] * m[k][j];
+          }
+      }
+      return res;
   }
 
   // ввод/вывод
-  friend istream& operator>>(istream& istr, TDynamicMatrix& v)
+  friend istream& operator>>(istream& istr, TDynamicMatrix& m)
   {
+      for (size_t i = 0; i < m.sz; i++) {
+          istr >> m.pMem[i];
+      }
+      return istr;
   }
-  friend ostream& operator<<(ostream& ostr, const TDynamicMatrix& v)
+  friend ostream& operator<<(ostream& ostr, const TDynamicMatrix& m)
   {
+      for (size_t i = 0; i < m.sz; i++)
+          ostr << m.pMem[i] << '\n'; // требуется оператор<< для типа T
+      return ostr;
   }
 };
 
