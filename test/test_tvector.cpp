@@ -42,6 +42,33 @@ TEST(TDynamicVector, copied_vector_has_its_own_memory)
 	EXPECT_NE(&v[0], &v1[0]);
 }
 
+TEST(TDynamicVector, can_create_vector_using_move_semantic)
+{
+	TDynamicVector<int> v(10);
+
+	ASSERT_NO_THROW(TDynamicVector<int> v1(std::move(v)));
+}
+
+TEST(TDynamicVector, moved_vector_is_deleted)
+{
+	TDynamicVector<int>v(10);
+	for (int i = 0; i < v.size(); i++) v[i] = i;
+	TDynamicVector<int> v1(std::move(v));
+
+	EXPECT_EQ(0, v.size());
+	EXPECT_EQ(nullptr, &v[0]);
+}
+
+TEST(TDynamicVector, can_move_vector)
+{
+	TDynamicVector<int>v(10);
+	for (int i = 0; i < v.size(); i++) v[i] = i;
+	TDynamicVector<int> v1 = std::move(v);
+
+	EXPECT_EQ(0, v.size());
+	EXPECT_EQ(nullptr, &v[0]);
+}
+
 TEST(TDynamicVector, can_get_size)
 {
   TDynamicVector<int> v(4);
